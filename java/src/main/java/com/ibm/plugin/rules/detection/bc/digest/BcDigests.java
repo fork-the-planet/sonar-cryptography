@@ -41,7 +41,7 @@ public final class BcDigests {
         // nothing
     }
 
-    private static BouncyCastleInfoMap infoMap = new BouncyCastleInfoMap();
+    private static final BouncyCastleInfoMap infoMap = new BouncyCastleInfoMap();
 
     static {
         /* Digests with non-standard type */
@@ -95,7 +95,6 @@ public final class BcDigests {
         infoMap.putKey("SHA3Digest");
         infoMap.putKey("SHA512Digest");
         infoMap.putKey("SHA512tDigest");
-        infoMap.putKey("SHAKEDigest");
         infoMap.putKey("SkeinDigest");
         infoMap.putKey("SM3Digest");
         infoMap.putKey("SparkleDigest");
@@ -105,10 +104,11 @@ public final class BcDigests {
         infoMap.putKey("XoodyakDigest");
     }
 
-    private static final List<IDetectionRule<Tree>> regularConstructors(
+    @Nonnull
+    private static List<IDetectionRule<Tree>> regularConstructors(
             @Nullable IDetectionContext detectionValueContext) {
-        List<IDetectionRule<Tree>> constructorsList = new LinkedList<>();
-        IDetectionContext context =
+        final List<IDetectionRule<Tree>> constructorsList = new LinkedList<>();
+        final IDetectionContext context =
                 detectionValueContext != null ? detectionValueContext : new DigestContext();
 
         for (Map.Entry<String, BouncyCastleInfoMap.Info> entry : infoMap.entrySet()) {
@@ -129,11 +129,11 @@ public final class BcDigests {
                             .inBundle(() -> "Bc")
                             .withoutDependingDetectionRules());
         }
-
         return constructorsList;
     }
 
-    private static final List<IDetectionRule<Tree>> otherConstructors(
+    @Nonnull
+    private static List<IDetectionRule<Tree>> otherConstructors(
             @Nullable IDetectionContext detectionValueContext) {
         List<IDetectionRule<Tree>> constructorsList = new LinkedList<>();
         IDetectionContext context =
@@ -159,6 +159,31 @@ public final class BcDigests {
                         .addDependingDetectionRules(regularConstructors(detectionValueContext))
                         .withMethodParameter("int")
                         .shouldBeDetectedAs(new DigestSizeFactory<>(Size.UnitType.BYTE))
+                        .buildForContext(context)
+                        .inBundle(() -> "Bc")
+                        .withoutDependingDetectionRules());
+
+        // add custom constructors for SHAKE to get the digest size
+        constructorsList.add(
+                new DetectionRuleBuilder<Tree>()
+                        .createDetectionRule()
+                        .forObjectExactTypes("org.bouncycastle.crypto.digests.SHAKEDigest")
+                        .forConstructor()
+                        .shouldBeDetectedAs(new ValueActionFactory<>("SHAKEDigest"))
+                        .withoutParameters()
+                        .buildForContext(context)
+                        .inBundle(() -> "Bc")
+                        .withoutDependingDetectionRules());
+
+        constructorsList.add(
+                new DetectionRuleBuilder<Tree>()
+                        .createDetectionRule()
+                        .forObjectExactTypes("org.bouncycastle.crypto.digests.SHAKEDigest")
+                        .forConstructor()
+                        .shouldBeDetectedAs(new ValueActionFactory<>("SHAKEDigest"))
+                        .withMethodParameter("int")
+                        .shouldBeDetectedAs(new DigestSizeFactory<>(Size.UnitType.BIT))
+                        .asChildOfParameterWithId(-1)
                         .buildForContext(context)
                         .inBundle(() -> "Bc")
                         .withoutDependingDetectionRules());

@@ -1,6 +1,6 @@
 /*
- * SonarQube Cryptography Plugin
- * Copyright (C) 2024 IBM
+ * Sonar Cryptography Plugin
+ * Copyright (C) 2025 PQCA
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,20 +17,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.plugin.rules.detection.bc.mac;
+package com.ibm.plugin.rules.detection.bc.keygenerationparameters;
 
-import org.bouncycastle.crypto.macs.KMAC;
+import com.ibm.engine.rule.IDetectionRule;
+import java.util.List;
+import java.util.stream.Stream;
+import javax.annotation.Nonnull;
+import org.sonar.plugins.java.api.tree.Tree;
 
-public class BcKMACTestFile {
-    public static void kmacExample() {
-        byte[] key = "secretkey".getBytes();
-        byte[] data = "hello".getBytes();
+public final class BcKeyGenerationParameters {
 
-        KMAC kmac = new KMAC(256, key); // Noncompliant {{(Mac) KMAC256}} {{(MessageDigest) KMAC}}
+    private BcKeyGenerationParameters() {
+        // nothing
+    }
 
-        kmac.update(data, 0, data.length);
-        byte[] output = new byte[32]; // 256 bits = 32 bytes
-        kmac.doFinal(output, 0);
-        System.out.println("KMAC output: " + new String(output));
+    @Nonnull
+    public static List<IDetectionRule<Tree>> rules() {
+        return Stream.of(BcRSAKeyGenerationParameters.rules().stream()).flatMap(i -> i).toList();
     }
 }

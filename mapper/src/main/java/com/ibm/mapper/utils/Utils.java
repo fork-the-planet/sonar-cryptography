@@ -56,13 +56,17 @@ public final class Utils {
                             tabs > 0 ? "└─ " : "",
                             node.getKind().getSimpleName(),
                             node.asString());
-                    if (node.hasChildren()) {
-                        printNodes(step, tabs + 1, node.getChildren().values());
-                    }
-
                     if (node instanceof IAssetCollection<?>) {
                         IAssetCollection<INode> collection = (IAssetCollection<INode>) node;
                         printNodes(step, tabs + 1, collection.getCollection());
+                        if (node.hasChildren()) {
+                            printNodes(step, tabs + 2, node.getChildren().values());
+                        }
+                        return;
+                    }
+
+                    if (node.hasChildren()) {
+                        printNodes(step, tabs + 1, node.getChildren().values());
                     }
                 });
     }
