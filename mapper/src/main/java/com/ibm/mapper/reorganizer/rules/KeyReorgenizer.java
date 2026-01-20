@@ -23,6 +23,7 @@ import com.ibm.mapper.model.Algorithm;
 import com.ibm.mapper.model.BlockCipher;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.model.Key;
+import com.ibm.mapper.model.KeyLength;
 import com.ibm.mapper.model.PrivateKey;
 import com.ibm.mapper.model.PublicKey;
 import com.ibm.mapper.model.SecretKey;
@@ -154,5 +155,63 @@ public final class KeyReorgenizer {
                                     parent.put(newNode);
                                     return roots;
                                 }
+                            });
+
+    /**
+     * A reorganizer rule for propagating KeyLength from a SecretKey node to its child BlockCipher.
+     *
+     * <p>This rule applies when a SecretKey node has both a KeyLength child and a BlockCipher
+     * child, but the BlockCipher doesn't have its own KeyLength.
+     *
+     * <p>This fixes the issue where SecretKeySpec detection correctly identifies the key size from
+     * the byte array but the BlockCipher doesn't receive this information, causing the enricher to
+     * apply a default key size instead.
+     */
+    @Nonnull
+    public static final IReorganizerRule PROPAGATE_KEY_LENGTH_TO_BLOCK_CIPHER =
+            new ReorganizerRuleBuilder()
+                    .createReorganizerRule("PROPAGATE_KEY_LENGTH_TO_BLOCK_CIPHER")
+                    .forNodeKind(SecretKey.class)
+                    .withDetectionCondition(
+                            (node, parent, roots) -> {
+                                // Check if the Key node has a KeyLength child
+                                Optional<INode> keyLengthOpt = node.hasChildOfType(KeyLength.class);
+                                if (keyLengthOpt.isEmpty()) {
+                                    return false;
+                                }
+
+                                // Check if the Key has a BlockCipher child
+                                Optional<INode> blockCipherOpt =
+                                        node.hasChildOfType(BlockCipher.class);
+                                if (blockCipherOpt.isEmpty()) {
+                                    return false;
+                                }
+
+                                // Check if the BlockCipher doesn't already have a KeyLength
+                                INode blockCipher = blockCipherOpt.get();
+                                return blockCipher.hasChildOfType(KeyLength.class).isEmpty();
+                            })
+                    .perform(
+                            (node, parent, roots) -> {
+                                // Get the KeyLength from the Key node
+                                final Optional<INode> keyLengthOpt =
+                                        node.hasChildOfType(KeyLength.class);
+                                if (keyLengthOpt.isEmpty()) {
+                                    return null;
+                                }
+
+                                // Get the BlockCipher child
+                                final Optional<INode> blockCipherOpt =
+                                        node.hasChildOfType(BlockCipher.class);
+                                if (blockCipherOpt.isEmpty()) {
+                                    return null;
+                                }
+
+                                // Copy the KeyLength to the BlockCipher
+                                final KeyLength keyLength = (KeyLength) keyLengthOpt.get();
+                                final INode blockCipher = blockCipherOpt.get();
+                                blockCipher.put(keyLength.deepCopy());
+
+                                return null; // Return null to indicate no root changes needed
                             });
 }

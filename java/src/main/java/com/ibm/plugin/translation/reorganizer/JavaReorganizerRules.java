@@ -58,6 +58,7 @@ public final class JavaReorganizerRules {
                         Sign.class, Signature.class),
                 SignatureReorganizer.MERGE_SIGNATURE_PARENT_AND_CHILD,
                 KeyReorgenizer.SPECIFY_KEY_TYPE_BY_LOOKING_AT_KEY_GENERATION,
-                KeyReorgenizer.MOVE_KEY_UNDER_ALGORITHM_AND_REPLACE_INNER_ALGORITHM);
+                KeyReorgenizer.MOVE_KEY_UNDER_ALGORITHM_AND_REPLACE_INNER_ALGORITHM,
+                KeyReorgenizer.PROPAGATE_KEY_LENGTH_TO_BLOCK_CIPHER);
     }
 }

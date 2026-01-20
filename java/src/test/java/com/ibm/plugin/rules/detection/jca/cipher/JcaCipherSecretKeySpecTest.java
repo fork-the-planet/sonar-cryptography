@@ -115,7 +115,7 @@ class JcaCipherSecretKeySpecTest extends TestBase {
             INode blockCipherNode = secretKeyNode.getChildren().get(BlockCipher.class);
             assertThat(blockCipherNode).isNotNull();
             assertThat(blockCipherNode.getChildren()).hasSize(6);
-            assertThat(blockCipherNode.asString()).isEqualTo("AES128-CBC-PKCS1");
+            assertThat(blockCipherNode.asString()).isEqualTo("AES256-CBC-PKCS1");
 
             // Decrypt under BlockCipher under SecretKey
             INode decryptNode = blockCipherNode.getChildren().get(Decrypt.class);
@@ -133,7 +133,7 @@ class JcaCipherSecretKeySpecTest extends TestBase {
             INode oidNode = blockCipherNode.getChildren().get(Oid.class);
             assertThat(oidNode).isNotNull();
             assertThat(oidNode.getChildren()).isEmpty();
-            assertThat(oidNode.asString()).isEqualTo("2.16.840.1.101.3.4.1");
+            assertThat(oidNode.asString()).isEqualTo("2.16.840.1.101.3.4.1.42");
 
             // BlockSize under BlockCipher under SecretKey
             INode blockSizeNode = blockCipherNode.getChildren().get(BlockSize.class);
@@ -145,7 +145,7 @@ class JcaCipherSecretKeySpecTest extends TestBase {
             INode keyLengthNode = blockCipherNode.getChildren().get(KeyLength.class);
             assertThat(keyLengthNode).isNotNull();
             assertThat(keyLengthNode.getChildren()).isEmpty();
-            assertThat(keyLengthNode.asString()).isEqualTo("128");
+            assertThat(keyLengthNode.asString()).isEqualTo("256");
 
             // Mode under BlockCipher under SecretKey
             INode modeNode = blockCipherNode.getChildren().get(Mode.class);
@@ -191,15 +191,15 @@ class JcaCipherSecretKeySpecTest extends TestBase {
 
             INode blockCipher = node.getChildren().get(BlockCipher.class);
             assertThat(blockCipher).isNotNull();
-            assertThat(blockCipher.asString()).isEqualTo("AES128");
+            assertThat(blockCipher.asString()).isEqualTo("AES256");
 
             INode keyLength = node.getChildren().get(KeyLength.class);
             assertThat(keyLength).isNotNull();
             assertThat(keyLength.asString()).isEqualTo("256");
 
-            INode defaultKeyLength = blockCipher.getChildren().get(KeyLength.class);
-            assertThat(defaultKeyLength).isNotNull();
-            assertThat(defaultKeyLength.asString()).isEqualTo("128");
+            INode blockCipherKeyLength = blockCipher.getChildren().get(KeyLength.class);
+            assertThat(blockCipherKeyLength).isNotNull();
+            assertThat(blockCipherKeyLength.asString()).isEqualTo("256");
 
             // BlockSize under BlockCipher under SecretKey under BlockCipher
             INode blockSizeNode = blockCipher.getChildren().get(BlockSize.class);
