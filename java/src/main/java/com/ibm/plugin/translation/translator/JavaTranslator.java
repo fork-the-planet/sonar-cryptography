@@ -157,9 +157,9 @@ public final class JavaTranslator
 
     /**
      * This function gets a detection context from the specified Tree location and file path. <br>
-     * <li>It retrieves the first and last tokens in the location, checks if both are not null, and
-     *     then extracts the range of the first token. From this, it obtains the line number and
-     *     offset.
+     * <li>It retrieves a specific token based on the location kind to ensure accurate line numbers.
+     *     For NEW_CLASS, it uses the identifier; for METHOD_INVOCATION, it uses the method select
+     *     expression. This avoids issues where firstToken() might include trivia.
      * <li>It also determines the kind of the location (e.g., NEW_CLASS, METHOD_INVOCATION,
      *     ENUM_CONSTANT) and populates a list of keywords accordingly.
      * <li>Finally, it creates a new DetectionContext object using the obtained information and
@@ -172,24 +172,35 @@ public final class JavaTranslator
         SyntaxToken firstToken = location.firstToken();
         SyntaxToken lastToken = location.lastToken();
         if (firstToken != null && lastToken != null) {
-            Range rangeFirst = firstToken.range();
-            Position start = rangeFirst.start();
-            int lineNumber = start.line();
-            int offset = start.columnOffset();
+            // Use a more specific token based on the tree kind to get accurate line numbers
+            SyntaxToken locationToken = firstToken;
             List<String> keywords = List.of();
             switch (location.kind()) {
                 case NEW_CLASS:
+                    NewClassTree newClassTree = (NewClassTree) location;
+                    // Use the identifier's first token for accurate location
+                    SyntaxToken identifierToken = newClassTree.identifier().firstToken();
+                    if (identifierToken != null) {
+                        locationToken = identifierToken;
+                    }
                     keywords =
                             List.of(
-                                    ((NewClassTree) location).methodSymbol().signature(),
-                                    ((NewClassTree) location).methodSymbol().name(),
-                                    ((NewClassTree) location).identifier().toString());
+                                    newClassTree.methodSymbol().signature(),
+                                    newClassTree.methodSymbol().name(),
+                                    newClassTree.identifier().toString());
                     break;
                 case METHOD_INVOCATION:
+                    MethodInvocationTree methodInvocationTree = (MethodInvocationTree) location;
+                    // Use the method select's first token for accurate location
+                    SyntaxToken methodSelectToken =
+                            methodInvocationTree.methodSelect().firstToken();
+                    if (methodSelectToken != null) {
+                        locationToken = methodSelectToken;
+                    }
                     keywords =
                             List.of(
-                                    ((MethodInvocationTree) location).methodSymbol().signature(),
-                                    ((MethodInvocationTree) location).methodSymbol().name());
+                                    methodInvocationTree.methodSymbol().signature(),
+                                    methodInvocationTree.methodSymbol().name());
                     break;
                 case ENUM_CONSTANT:
                     keywords =
@@ -206,6 +217,10 @@ public final class JavaTranslator
                 default:
                     // nothing
             }
+            Range rangeFirst = locationToken.range();
+            Position start = rangeFirst.start();
+            int lineNumber = start.line();
+            int offset = start.columnOffset();
             return new DetectionLocation(filePath, lineNumber, offset, keywords, bundle);
         }
         return null;
