@@ -27,10 +27,12 @@ import com.ibm.engine.model.SaltSize;
 import com.ibm.engine.model.context.IDetectionContext;
 import com.ibm.mapper.mapper.jca.JcaAlgorithmMapper;
 import com.ibm.mapper.model.INode;
+import com.ibm.mapper.model.KeyDerivationFunction;
 import com.ibm.mapper.model.KeyLength;
 import com.ibm.mapper.model.PasswordLength;
 import com.ibm.mapper.model.SaltLength;
 import com.ibm.mapper.model.SecretKey;
+import com.ibm.mapper.model.functionality.KeyDerivation;
 import com.ibm.mapper.model.functionality.KeyGeneration;
 import com.ibm.mapper.utils.DetectionLocation;
 import java.util.Optional;
@@ -51,7 +53,12 @@ public final class JavaSecretKeyContextTranslator extends JavaAbstractLibraryTra
                     .map(com.ibm.mapper.model.Algorithm.class::cast)
                     .map(
                             algo -> {
-                                algo.put(new KeyGeneration(detectionLocation));
+                                // Add appropriate functionality based on algorithm type
+                                if (algo instanceof KeyDerivationFunction) {
+                                    algo.put(new KeyDerivation(detectionLocation));
+                                } else {
+                                    algo.put(new KeyGeneration(detectionLocation));
+                                }
                                 return algo;
                             })
                     .map(SecretKey::new);

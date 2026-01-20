@@ -22,6 +22,7 @@ package com.ibm.mapper.mapper.jca;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ibm.mapper.model.INode;
+import com.ibm.mapper.model.KeyDerivationFunction;
 import com.ibm.mapper.model.Mac;
 import com.ibm.mapper.model.PasswordBasedKeyDerivationFunction;
 import com.ibm.mapper.model.algorithms.PBKDF2;
@@ -44,6 +45,7 @@ class JcaPBKDFMapperTest {
 
         assertThat(pbkdfOptional).isPresent();
         assertThat(pbkdfOptional.get()).isInstanceOf(PBKDF2.class);
+        assertThat(pbkdfOptional.get()).isInstanceOf(KeyDerivationFunction.class);
         assertThat(pbkdfOptional.get().is(PasswordBasedKeyDerivationFunction.class)).isTrue();
         assertThat(pbkdfOptional.get().asString()).isEqualTo("PBKDF2-HMAC-SHA256");
         assertThat(pbkdfOptional.get().getIterations()).isEmpty();

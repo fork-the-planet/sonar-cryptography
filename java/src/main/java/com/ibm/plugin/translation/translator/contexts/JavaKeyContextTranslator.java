@@ -43,10 +43,12 @@ import com.ibm.mapper.mapper.jca.JcaCurveMapper;
 import com.ibm.mapper.model.IAlgorithm;
 import com.ibm.mapper.model.INode;
 import com.ibm.mapper.model.Key;
+import com.ibm.mapper.model.KeyDerivationFunction;
 import com.ibm.mapper.model.KeyLength;
 import com.ibm.mapper.model.PrivateKey;
 import com.ibm.mapper.model.PublicKey;
 import com.ibm.mapper.model.SecretKey;
+import com.ibm.mapper.model.functionality.KeyDerivation;
 import com.ibm.mapper.model.functionality.KeyGeneration;
 import com.ibm.mapper.utils.DetectionLocation;
 import java.util.Optional;
@@ -66,8 +68,12 @@ public final class JavaKeyContextTranslator extends JavaAbstractLibraryTranslato
                     .parse(algorithm.asString(), detectionLocation)
                     .map(
                             algo -> {
-                                // key gen
-                                algo.put(new KeyGeneration(detectionLocation));
+                                // Add appropriate functionality based on algorithm type
+                                if (algo instanceof KeyDerivationFunction) {
+                                    algo.put(new KeyDerivation(detectionLocation));
+                                } else {
+                                    algo.put(new KeyGeneration(detectionLocation));
+                                }
                                 // put key
                                 final Key key = new Key((IAlgorithm) algo);
                                 if (detectionContext.is(PrivateKeyContext.class)) {

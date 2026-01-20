@@ -41,7 +41,7 @@ import com.ibm.mapper.model.PasswordLength;
 import com.ibm.mapper.model.SaltLength;
 import com.ibm.mapper.model.SecretKey;
 import com.ibm.mapper.model.functionality.Digest;
-import com.ibm.mapper.model.functionality.KeyGeneration;
+import com.ibm.mapper.model.functionality.KeyDerivation;
 import com.ibm.mapper.model.functionality.Tag;
 import com.ibm.plugin.TestBase;
 import java.util.List;
@@ -175,12 +175,12 @@ class JcaPBEKeySpecTest extends TestBase {
         assertThat(oidNode.getChildren()).isEmpty();
         assertThat(oidNode.asString()).isEqualTo("1.2.840.113549.2.7");
 
-        // KeyGeneration under PasswordBasedKeyDerivationFunction under SecretKey
-        INode keyGenerationNode =
-                passwordBasedKeyDerivationFunctionNode.getChildren().get(KeyGeneration.class);
-        assertThat(keyGenerationNode).isNotNull();
-        assertThat(keyGenerationNode.getChildren()).isEmpty();
-        assertThat(keyGenerationNode.asString()).isEqualTo("KEYGENERATION");
+        // KeyDerivation under PasswordBasedKeyDerivationFunction under SecretKey
+        INode keyDerivationNode =
+                passwordBasedKeyDerivationFunctionNode.getChildren().get(KeyDerivation.class);
+        assertThat(keyDerivationNode).isNotNull();
+        assertThat(keyDerivationNode.getChildren()).isEmpty();
+        assertThat(keyDerivationNode.asString()).isEqualTo("KEYDERIVATION");
 
         // PasswordLength under SecretKey
         INode passwordLengthNode = secretKeyNode.getChildren().get(PasswordLength.class);

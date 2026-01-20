@@ -50,6 +50,7 @@ import com.ibm.mapper.model.SecretKey;
 import com.ibm.mapper.model.TagLength;
 import com.ibm.mapper.model.functionality.Decrypt;
 import com.ibm.mapper.model.functionality.Digest;
+import com.ibm.mapper.model.functionality.KeyDerivation;
 import com.ibm.mapper.model.functionality.KeyGeneration;
 import com.ibm.mapper.model.functionality.Tag;
 import com.ibm.plugin.TestBase;
@@ -198,12 +199,12 @@ class JcaGCMParameterSpecTest extends TestBase {
             assertThat(tagNode.getChildren()).isEmpty();
             assertThat(tagNode.asString()).isEqualTo("TAG");
 
-            // KeyGeneration under PasswordBasedKeyDerivationFunction under SecretKey
-            INode keyGenerationNode =
-                    passwordBasedKeyDerivationFunctionNode.getChildren().get(KeyGeneration.class);
-            assertThat(keyGenerationNode).isNotNull();
-            assertThat(keyGenerationNode.getChildren()).isEmpty();
-            assertThat(keyGenerationNode.asString()).isEqualTo("KEYGENERATION");
+            // KeyDerivation under PasswordBasedKeyDerivationFunction under SecretKey
+            INode keyDerivationNode =
+                    passwordBasedKeyDerivationFunctionNode.getChildren().get(KeyDerivation.class);
+            assertThat(keyDerivationNode).isNotNull();
+            assertThat(keyDerivationNode.getChildren()).isEmpty();
+            assertThat(keyDerivationNode.asString()).isEqualTo("KEYDERIVATION");
 
             // PasswordLength under SecretKey
             INode passwordLengthNode = secretKeyNode.getChildren().get(PasswordLength.class);
