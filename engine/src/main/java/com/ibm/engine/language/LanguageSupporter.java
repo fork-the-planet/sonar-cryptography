@@ -19,9 +19,14 @@
  */
 package com.ibm.engine.language;
 
+import com.ibm.engine.language.go.GoLanguageSupport;
+import com.ibm.engine.language.go.GoScanContext;
 import com.ibm.engine.language.java.JavaLanguageSupport;
 import com.ibm.engine.language.python.PythonLanguageSupport;
 import javax.annotation.Nonnull;
+import org.sonar.go.symbols.Symbol;
+import org.sonar.plugins.go.api.Tree;
+import org.sonar.plugins.go.api.checks.GoCheck;
 import org.sonar.plugins.java.api.JavaCheck;
 import org.sonar.plugins.java.api.JavaFileScannerContext;
 import org.sonar.plugins.python.api.PythonCheck;
@@ -51,5 +56,10 @@ public final class LanguageSupporter {
                     PythonVisitorContext>
             pythonLanguageSupporter() {
         return new PythonLanguageSupport();
+    }
+
+    @Nonnull
+    public static ILanguageSupport<GoCheck, Tree, Symbol, GoScanContext> goLanguageSupporter() {
+        return new GoLanguageSupport();
     }
 }

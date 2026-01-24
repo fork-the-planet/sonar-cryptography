@@ -41,6 +41,7 @@ import org.sonar.plugins.java.api.semantic.Symbol;
 import org.sonar.plugins.java.api.tree.Tree;
 
 class JcaCipherGetInstance1Test extends TestBase {
+
     @Test
     void test() {
         CheckVerifier.newVerifier()

@@ -110,7 +110,7 @@ public final class JavaCipherContextTranslator extends JavaAbstractLibraryTransl
             };
         } else if (value instanceof ValueAction<Tree> valueAction
                 && detectionContext instanceof DetectionContext context) {
-            String kind = context.get("kind").map(k -> k).orElse("");
+            String kind = context.get("kind").orElse("");
             switch (kind) {
                 case "BLOCK_CIPHER_ENGINE", "HASH":
                     /* TODO: better handle the HASH case (used in `BcOCBBlockCipher`): use asKind MessageDigest? */

@@ -12,6 +12,7 @@
         <module>mapper</module>
         <module>java</module>
         <module>python</module>
+        <module>go</module>
         <module>engine</module>
         <module>output</module>
         <module>common</module>
@@ -48,6 +49,7 @@
         <!-- language parser versions -->
         <sonar.java.version>8.18.0.40025</sonar.java.version>
         <sonar.python.version>5.10.0.25429</sonar.python.version>
+        <sonar.go.version>1.32.0.5128</sonar.go.version>
 
         <google-java-format.version>1.28.0</google-java-format.version>
     </properties>
@@ -124,6 +126,11 @@
             <artifactId>sonar-python-plugin</artifactId>
             <version>${sonar.python.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.sonarsource.go</groupId>
+            <artifactId>sonar-go-plugin</artifactId>
+            <version>${sonar.go.version}</version>
+        </dependency>
 
         <!-- unit tests -->
         <dependency>
@@ -157,6 +164,12 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.27.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.17.0</version>
             <scope>test</scope>
         </dependency>
 

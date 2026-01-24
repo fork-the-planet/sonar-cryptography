@@ -169,9 +169,40 @@ public final class MethodMatcher<T> {
             return false;
         }
 
-        return this.invokedObjectTypeString.test(invokedObjectType.get())
-                && this.methodName.test(invokedMethodName.get())
-                && this.parameterTypes.test(param);
+        boolean typeMatches = this.invokedObjectTypeString.test(invokedObjectType.get());
+        boolean nameMatches = this.methodName.test(invokedMethodName.get());
+
+        if (!typeMatches || !nameMatches) {
+            return false;
+        }
+
+        // For languages supporting subset parameter matching (e.g., Go composite literals),
+        // the rule matches if at least one expected parameter exists in the actual fields.
+        if (invokedMethodName.get().equals("<init>")
+                && !parameterTypesSerializable.isEmpty()
+                && translation.supportsSubsetParameterMatching()) {
+            return anyParameterMatches(param);
+        }
+
+        return this.parameterTypes.test(param);
+    }
+
+    /**
+     * Checks that at least one expected parameter type exists in the actual parameter types. This
+     * supports named parameter matching (e.g., Go struct field names in composite literals) where
+     * the composite literal may only specify a subset of the fields the rule can detect.
+     */
+    private boolean anyParameterMatches(@Nonnull List<IType> actualTypes) {
+        for (String expectedType : parameterTypesSerializable) {
+            if (ANY.equals(expectedType)) {
+                return true;
+            }
+            boolean found = actualTypes.stream().anyMatch(actual -> actual.is(expectedType));
+            if (found) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nonnull

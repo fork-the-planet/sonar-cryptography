@@ -20,6 +20,7 @@
 package com.ibm.mapper.model.collections;
 
 import com.ibm.mapper.model.INode;
+import com.ibm.mapper.model.NodeOrigin;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -95,4 +96,22 @@ public abstract class AbstractAssetCollection<K extends INode> implements IAsset
     public void removeChildOfType(@Nonnull Class<? extends INode> nodeType) {
         this.children.remove(nodeType);
     }
+
+    @Nonnull
+    @Override
+    public NodeOrigin getOrigin() {
+        return NodeOrigin.DETECTED;
+    }
+
+    /**
+     * Returns whether this collection type supports merging when multiple instances of the same
+     * class are appended to a parent node. Override to return {@code true} in collection types that
+     * should be merged rather than creating new root nodes.
+     */
+    public boolean isMergeable() {
+        return false;
+    }
+
+    @Nonnull
+    public abstract AbstractAssetCollection<K> createMerged(@Nonnull List<K> mergedCollection);
 }

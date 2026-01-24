@@ -24,7 +24,8 @@ import com.ibm.engine.model.IValue;
 import com.ibm.engine.model.context.IDetectionContext;
 import com.ibm.engine.rule.IBundle;
 import com.ibm.mapper.model.INode;
-import com.ibm.mapper.model.collections.MergeableCollection;
+import com.ibm.mapper.model.NodeOrigin;
+import com.ibm.mapper.model.collections.AbstractAssetCollection;
 import com.ibm.mapper.utils.DetectionLocation;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -197,28 +198,38 @@ public abstract class ITranslator<R, T, S, P> {
                                     parentNode.hasChildOfType(childNode.getKind());
                             if (existingNodeOpt.isPresent()) {
                                 INode existingNode = existingNodeOpt.get();
-                                /* Special case of multiple `MergeableCollection`: we merge them */
-                                if (childNode instanceof MergeableCollection addedCollectionNode
+                                /* Special case of multiple mergeable asset collections of the same type: we merge them */
+                                if (childNode
+                                                instanceof
+                                                AbstractAssetCollection<?> addedCollectionNode
                                         && existingNode
                                                 instanceof
-                                                MergeableCollection existingCollectionNode
-                                        /* this 3rd condition ensures that both nodes have the same *exact* class */
+                                                AbstractAssetCollection<?> existingCollectionNode
+                                        && addedCollectionNode.isMergeable()
+                                        /* this condition ensures that both nodes have the same *exact* class */
                                         && addedCollectionNode
                                                 .getClass()
                                                 .equals(existingCollectionNode.getClass())) {
 
+                                    @SuppressWarnings("unchecked")
+                                    AbstractAssetCollection<INode> existingColl =
+                                            (AbstractAssetCollection<INode>) existingCollectionNode;
+                                    @SuppressWarnings("unchecked")
+                                    AbstractAssetCollection<INode> addedColl =
+                                            (AbstractAssetCollection<INode>) addedCollectionNode;
+
                                     List<INode> mergedCollection =
-                                            new ArrayList<>(existingCollectionNode.getCollection());
-                                    mergedCollection.addAll(addedCollectionNode.getCollection());
+                                            new ArrayList<>(existingColl.getCollection());
+                                    mergedCollection.addAll(addedColl.getCollection());
 
-                                    MergeableCollection mergedCollectionNode =
-                                            new MergeableCollection(mergedCollection);
+                                    AbstractAssetCollection<INode> mergedCollectionNode =
+                                            existingColl.createMerged(mergedCollection);
 
-                                    addedCollectionNode
+                                    addedColl
                                             .getChildren()
                                             .values()
                                             .forEach(mergedCollectionNode::put);
-                                    existingCollectionNode
+                                    existingColl
                                             .getChildren()
                                             .values()
                                             .forEach(mergedCollectionNode::put);
@@ -226,10 +237,27 @@ public abstract class ITranslator<R, T, S, P> {
                                     parentNode.put(mergedCollectionNode);
                                 } else if (existingNode.is(childNode.getKind())
                                         && !existingNode.asString().equals(childNode.asString())) {
-                                    // add node to new roots
-                                    final INode newParent = parentNode.deepCopy();
-                                    newParent.put(childNode);
-                                    newRoots.add(newParent);
+                                    // Handle based on origin:
+                                    // - DETECTED values override DEFAULT/ENRICHED values
+                                    // - Only create new roots when both are DETECTED with different
+                                    // values
+                                    if (existingNode.getOrigin() == NodeOrigin.DEFAULT
+                                            || existingNode.getOrigin() == NodeOrigin.ENRICHED) {
+                                        // Replace default/enriched with detected value
+                                        if (childNode.getOrigin() == NodeOrigin.DETECTED) {
+                                            parentNode.put(childNode);
+                                        }
+                                        // If child is also DEFAULT/ENRICHED, keep existing
+                                    } else if (childNode.getOrigin() == NodeOrigin.DEFAULT
+                                            || childNode.getOrigin() == NodeOrigin.ENRICHED) {
+                                        // Keep existing DETECTED value, ignore default/enriched
+                                        // child
+                                    } else {
+                                        // Both are DETECTED with different values: create new roots
+                                        final INode newParent = parentNode.deepCopy();
+                                        newParent.put(childNode);
+                                        newRoots.add(newParent);
+                                    }
                                 }
                             } else {
                                 parentNode.put(childNode);
